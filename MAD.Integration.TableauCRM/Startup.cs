@@ -21,8 +21,8 @@ namespace MAD.Integration.TableauCRM
                 .AddTransient(_ => new SqlServerCompiler())
                 .AddTransient<IQueryFactoryFactory, QueryFactoryFactory>()
                 .AddTransient<ISqlConnectionFactory, SqlConnectionFactory>()
-                .AddTransient<SalesforceApiClientFactory>()                
-                .AddTransient<ICsvManager, CsvManager>()   
+                .AddTransient<SalesforceApiClientFactory>()
+                .AddTransient<ICsvManager, CsvManager>()
                 .AddTransient<IResultSetFactory, SqlResultSetFactory>()
                 .AddTransient((svc) =>
                 {
@@ -40,6 +40,7 @@ namespace MAD.Integration.TableauCRM
                     return options;
                 })
                 .AddTransient<ApiClientProvider>()
+                .AddScoped<JobManager>()
                 .AddScoped<SourceTableConsumer>();
         }
 
@@ -55,18 +56,8 @@ namespace MAD.Integration.TableauCRM
         {
             await dbContext.Database.MigrateAsync();
 
-            // Delete inactive jobs
-            foreach (var configuration in dbContext.Configuration.Where(y => y.IsActive == false))
-            {
-                backgroundJobClient.Delete(configuration.DestinationTableName);
-                recurringJobManager.RemoveIfExists(configuration.DestinationTableName);
-            }
-
-            // Register active jobs
-            foreach (var configuration in dbContext.Configuration.Where(y => y.IsActive))
-            {
-                recurringJobFactory.CreateRecurringJob<SourceTableConsumer>(configuration.DestinationTableName, y => y.ConsumeSourceTableAsync(configuration), Cron.Daily());
-            }
+            // JobManager runs once a day to add new configurations and delete inactive ones
+            recurringJobFactory.CreateRecurringJob<JobManager>("JobManager", y => y.CreateOrUpdateJobs(), Cron.Daily());
         }
 
         private bool IsConfigValid(AppConfig config)
