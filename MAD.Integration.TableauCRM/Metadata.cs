@@ -70,6 +70,9 @@ namespace MAD.Integration.TableauCRM
         [JsonProperty("description")]
         public string Description { get; set; }
 
+        [JsonProperty("defaultValue")]
+        public string DefaultValue { get; set; }
+
         [JsonProperty("firstDayOfWeek")]
         public int FirstDayOfWeek { get; set; }
 

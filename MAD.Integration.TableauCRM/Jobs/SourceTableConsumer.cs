@@ -80,7 +80,7 @@ namespace MAD.Integration.TableauCRM.Jobs
             // Update the action for the Salesforce object to "Process" to start the data upload to the new dataset
             var updateObject = new SObject
             {
-                { "parentId", headerResponse.Id },
+                //{ "Id", headerResponse.Id },
                 { "Action", "Process" }
             };
 
@@ -113,18 +113,24 @@ namespace MAD.Integration.TableauCRM.Jobs
                     Fields = resultSetSchema.Select(x =>
                     {
                         var dataType = this.GetSalesforceDataType(x.System_Type_Name);
-
-                        return new FieldInfo
+                        var fieldInfo = new FieldInfo
                         {
                             CanTruncate = false,
                             Type = dataType,
-                            Format = dataType == "Date" ? "dd/MM/yyyy HH:mm:ss" : "",
+                            Format = dataType == "Date" ? "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" : null,
                             FullyQualifiedName = x.Name,
-                            Precision = x.Precision,
+                            Precision = Math.Min(18, x.Precision),
                             Scale = x.Scale,
                             Name = x.Name,
                             Label = x.Name
                         };
+
+                        if (dataType == "Numeric")
+                        {
+                            fieldInfo.DefaultValue = "0";
+                        }
+
+                        return fieldInfo;
                     }).ToList()
                 }
             }
