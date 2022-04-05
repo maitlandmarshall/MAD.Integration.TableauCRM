@@ -348,3 +348,6 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+/MAD.Integration.TableauCRM/settings.default.json
+/MAD.Integration.TableauCRM.Tests/testsettings.json
