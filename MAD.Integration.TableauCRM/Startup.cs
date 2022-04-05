@@ -21,9 +21,9 @@ namespace MAD.Integration.TableauCRM
                 .AddTransient(_ => new SqlServerCompiler())
                 .AddTransient<IQueryFactoryFactory, QueryFactoryFactory>()
                 .AddTransient<ISqlConnectionFactory, SqlConnectionFactory>()
-                .AddTransient<SalesforceApiClientFactory>()
-                .AddTransient<IQueryClient, QueryClient>()
+                .AddTransient<SalesforceApiClientFactory>()                
                 .AddTransient<ICsvManager, CsvManager>()   
+                .AddTransient<IResultSetFactory, SqlResultSetFactory>()
                 .AddTransient((svc) =>
                 {
                     var config = svc.GetRequiredService<AppConfig>();

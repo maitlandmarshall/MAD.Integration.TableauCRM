@@ -12,7 +12,7 @@ namespace MAD.Integration.TableauCRM.Services
             DetectDelimiter = true
         };
 
-        public string GenerateFile(string fileName, IEnumerable<dynamic> data)
+        public string GenerateFile(string fileName, ResultSet resultSet)
         {
             if (Directory.Exists("Temp") == false)
                 Directory.CreateDirectory("Temp");
@@ -24,21 +24,15 @@ namespace MAD.Integration.TableauCRM.Services
             using var csvWriter = new CsvWriter(writer, csvConfig);
 
             // Write header columns to csv file
-            var keys = data
-                .Cast<IDictionary<string, object>>()
-                .Select(x => x.Keys)
-                .First()
-                .ToList();
-
-            foreach (var key in keys)
+            foreach (var schema in resultSet.Schema)
             {
-                csvWriter.WriteField(key);
+                csvWriter.WriteField(schema.Name);
             }
 
             csvWriter.NextRecord();
 
             // Write rows to csv file
-            foreach (var dict in data)
+            foreach (var dict in resultSet.Results)
             {
                 foreach (var pair in dict)
                 {
