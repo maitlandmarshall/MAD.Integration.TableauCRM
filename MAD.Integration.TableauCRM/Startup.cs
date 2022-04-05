@@ -53,19 +53,19 @@ namespace MAD.Integration.TableauCRM
 
         public async Task PostConfigure(ConfigurationDbContext dbContext, IRecurringJobFactory recurringJobFactory, IBackgroundJobClient backgroundJobClient, IRecurringJobManager recurringJobManager)
         {
-            await dbContext.Database.MigrateAsync();            
-
-            // Register active jobs
-            foreach (var configuration in dbContext.Configuration.Where(y => y.IsActive))
-            {
-                recurringJobFactory.CreateRecurringJob<SourceTableConsumer>(configuration.DestinationTableName, y => y.ConsumeSourceTableAsync(configuration), Cron.Daily());
-            }
+            await dbContext.Database.MigrateAsync();
 
             // Delete inactive jobs
             foreach (var configuration in dbContext.Configuration.Where(y => y.IsActive == false))
             {
                 backgroundJobClient.Delete(configuration.DestinationTableName);
                 recurringJobManager.RemoveIfExists(configuration.DestinationTableName);
+            }
+
+            // Register active jobs
+            foreach (var configuration in dbContext.Configuration.Where(y => y.IsActive))
+            {
+                recurringJobFactory.CreateRecurringJob<SourceTableConsumer>(configuration.DestinationTableName, y => y.ConsumeSourceTableAsync(configuration), Cron.Daily());
             }
         }
 
