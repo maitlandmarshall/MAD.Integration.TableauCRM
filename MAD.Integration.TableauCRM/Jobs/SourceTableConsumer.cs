@@ -47,7 +47,7 @@ namespace MAD.Integration.TableauCRM.Jobs
                 { "Format", "Csv" },
                 { "EdgemartAlias", configuration.DestinationTableName },
                 { "MetadataJson", Convert.ToBase64String(metadataBytes) },
-                { "Operation", "Upsert" },
+                { "Operation", "Overwrite" },
                 { "Action", "None" }
             };
 
