@@ -51,7 +51,7 @@ namespace MAD.Integration.TableauCRM
             }
         }
 
-        public async Task PostConfigure(ConfigurationDbContext dbContext, IRecurringJobFactory recurringJobFactory, IBackgroundJobClient backgroundJobClient)
+        public async Task PostConfigure(ConfigurationDbContext dbContext, IRecurringJobFactory recurringJobFactory, IBackgroundJobClient backgroundJobClient, IRecurringJobManager recurringJobManager)
         {
             await dbContext.Database.MigrateAsync();            
 
@@ -65,6 +65,7 @@ namespace MAD.Integration.TableauCRM
             foreach (var configuration in dbContext.Configuration.Where(y => y.IsActive == false))
             {
                 backgroundJobClient.Delete(configuration.DestinationTableName);
+                recurringJobManager.RemoveIfExists(configuration.DestinationTableName);
             }
         }
 
