@@ -29,18 +29,34 @@ namespace MAD.Integration.TableauCRM.Services
                 csvWriter.WriteField(schema.Name);
             }
 
-            csvWriter.NextRecord();
-
             // Write rows to csv file
             foreach (var dict in resultSet.Results)
             {
+                csvWriter.NextRecord();
+
                 foreach (var pair in dict)
                 {
-                    csvWriter.WriteField(pair.Value);
-                }
+                    object value;
 
-                csvWriter.NextRecord();
+                    if (pair.Value is DateTime dt)
+                    {
+                        value = dt.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+                    }
+                    else if (pair.Value is DateTimeOffset dto)
+                    {
+                        value = dto.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+                    }
+                    else
+                    {
+                        value = pair.Value;
+                    }
+
+                    csvWriter.WriteField(value);
+                }
             }
+
+            // Add a blank row otherwise Salesforce will error out
+            csvWriter.NextRecord();
 
             return outputFilePath;
         }
