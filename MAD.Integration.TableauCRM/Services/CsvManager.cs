@@ -18,7 +18,7 @@ namespace MAD.Integration.TableauCRM.Services
                 Directory.CreateDirectory("Temp");
 
             // Create temporary csv file in application directory
-            var outputFilePath = Path.Combine("Temp", $"{fileName}.csv");
+            var outputFilePath = Path.Combine("Temp", $"{fileName}_{DateTime.Now:yyMMddHHmmss}.csv");
 
             using var writer = new StreamWriter(outputFilePath);
             using var csvWriter = new CsvWriter(writer, csvConfig);
