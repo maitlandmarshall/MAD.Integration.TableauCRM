@@ -24,6 +24,7 @@ namespace MAD.Integration.TableauCRM
                 .AddTransient<SalesforceApiClientFactory>()
                 .AddTransient<ICsvManager, CsvManager>()
                 .AddTransient<IResultSetFactory, SqlResultSetFactory>()
+                .AddTransient<IJobRegistrar, JobRegistrar>()
                 .AddTransient((svc) =>
                 {
                     var config = svc.GetRequiredService<AppConfig>();
@@ -52,12 +53,15 @@ namespace MAD.Integration.TableauCRM
             }
         }
 
-        public async Task PostConfigure(ConfigurationDbContext dbContext, IRecurringJobFactory recurringJobFactory, IBackgroundJobClient backgroundJobClient, IRecurringJobManager recurringJobManager)
+        public async Task PostConfigure(ConfigurationDbContext dbContext, IRecurringJobFactory recurringJobFactory, IBackgroundJobClient backgroundJobClient, IRecurringJobManager recurringJobManager, IJobRegistrar jobRegistrar)
         {
             await dbContext.Database.MigrateAsync();
 
-            // JobManager runs once a day to add new configurations and delete inactive ones
-            recurringJobFactory.CreateRecurringJob<JobManager>("JobManager", y => y.CreateOrUpdateJobs(), Cron.Daily());
+            // Add/delete jobs on startup
+            await jobRegistrar.RegisterOrDeleteJobsAsync();
+
+            // JobManager runs once a day to update/delete jobs depending on configuration changes
+            recurringJobFactory.CreateRecurringJob<JobManager>("JobManager", y => y.UpdateJobsAsync(), Cron.Daily());
         }
 
         private bool IsConfigValid(AppConfig config)
