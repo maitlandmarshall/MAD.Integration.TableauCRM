@@ -9,15 +9,13 @@ namespace MAD.Integration.TableauCRM.Services
     public class JobRegistrar : IJobRegistrar
     {
         private readonly ConfigurationDbContext dbContext;
-        private readonly IRecurringJobManager recurringJobManager;
-        private readonly IRecurringJobFactory recurringJobFactory;
+        private readonly IRecurringJobManager recurringJobManager;        
         private readonly IBackgroundJobClient backgroundJobClient;        
 
-        public JobRegistrar(ConfigurationDbContext dbContext, IRecurringJobManager recurringJobManager, IRecurringJobFactory recurringJobFactory, IBackgroundJobClient backgroundJobClient)
+        public JobRegistrar(ConfigurationDbContext dbContext, IRecurringJobManager recurringJobManager, IBackgroundJobClient backgroundJobClient)
         {
             this.dbContext = dbContext;
-            this.recurringJobManager = recurringJobManager;
-            this.recurringJobFactory = recurringJobFactory;
+            this.recurringJobManager = recurringJobManager;            
             this.backgroundJobClient = backgroundJobClient;
         }
 
@@ -35,7 +33,7 @@ namespace MAD.Integration.TableauCRM.Services
             // Register active jobs
             foreach (var configuration in configs.Where(y => y.IsActive))
             {
-                recurringJobFactory.CreateRecurringJob<SourceTableConsumer>(configuration.DestinationTableName, y => y.ConsumeSourceTableAsync(configuration), Cron.Daily());
+                recurringJobManager.CreateRecurringJob<SourceTableConsumer>(configuration.DestinationTableName, y => y.ConsumeSourceTableAsync(configuration), Cron.Daily());
             }
         }
     }

@@ -53,7 +53,7 @@ namespace MAD.Integration.TableauCRM
             }
         }
 
-        public async Task PostConfigure(ConfigurationDbContext dbContext, IRecurringJobFactory recurringJobFactory, IBackgroundJobClient backgroundJobClient, IRecurringJobManager recurringJobManager, IJobRegistrar jobRegistrar)
+        public async Task PostConfigure(ConfigurationDbContext dbContext, IRecurringJobManager recurringJobManager, IJobRegistrar jobRegistrar)
         {
             await dbContext.Database.MigrateAsync();
 
@@ -61,7 +61,7 @@ namespace MAD.Integration.TableauCRM
             await jobRegistrar.RegisterOrDeleteJobsAsync();
 
             // JobManager runs once a day to update/delete jobs depending on configuration changes
-            recurringJobFactory.CreateRecurringJob<JobManager>("JobManager", y => y.UpdateJobsAsync(), Cron.Daily());
+            recurringJobManager.CreateRecurringJob<JobManager>("JobManager", y => y.UpdateJobsAsync(), Cron.Daily());
         }
 
         private bool IsConfigValid(AppConfig config)
