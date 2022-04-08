@@ -21,9 +21,10 @@ namespace MAD.Integration.TableauCRM
                 .AddTransient(_ => new SqlServerCompiler())
                 .AddTransient<IQueryFactoryFactory, QueryFactoryFactory>()
                 .AddTransient<ISqlConnectionFactory, SqlConnectionFactory>()
-                .AddTransient<SalesforceApiClientFactory>()                
-                .AddTransient<ICsvManager, CsvManager>()   
+                .AddTransient<SalesforceApiClientFactory>()
+                .AddTransient<ICsvManager, CsvManager>()
                 .AddTransient<IResultSetFactory, SqlResultSetFactory>()
+                .AddTransient<IJobRegistrar, JobRegistrar>()
                 .AddTransient((svc) =>
                 {
                     var config = svc.GetRequiredService<AppConfig>();
@@ -40,6 +41,7 @@ namespace MAD.Integration.TableauCRM
                     return options;
                 })
                 .AddTransient<ApiClientProvider>()
+                .AddScoped<JobManager>()
                 .AddScoped<SourceTableConsumer>();
         }
 
@@ -51,22 +53,15 @@ namespace MAD.Integration.TableauCRM
             }
         }
 
-        public async Task PostConfigure(ConfigurationDbContext dbContext, IRecurringJobFactory recurringJobFactory, IBackgroundJobClient backgroundJobClient, IRecurringJobManager recurringJobManager)
+        public async Task PostConfigure(ConfigurationDbContext dbContext, IRecurringJobManager recurringJobManager, IJobRegistrar jobRegistrar)
         {
             await dbContext.Database.MigrateAsync();
 
-            // Delete inactive jobs
-            foreach (var configuration in dbContext.Configuration.Where(y => y.IsActive == false))
-            {
-                backgroundJobClient.Delete(configuration.DestinationTableName);
-                recurringJobManager.RemoveIfExists(configuration.DestinationTableName);
-            }
+            // Add/delete jobs on startup
+            await jobRegistrar.RegisterOrDeleteJobsAsync();
 
-            // Register active jobs
-            foreach (var configuration in dbContext.Configuration.Where(y => y.IsActive))
-            {
-                recurringJobFactory.CreateRecurringJob<SourceTableConsumer>(configuration.DestinationTableName, y => y.ConsumeSourceTableAsync(configuration), Cron.Daily());
-            }
+            // JobManager runs once a day to update/delete jobs depending on configuration changes
+            recurringJobManager.CreateRecurringJob<JobManager>("JobManager", y => y.UpdateJobsAsync(), Cron.Daily());
         }
 
         private bool IsConfigValid(AppConfig config)
