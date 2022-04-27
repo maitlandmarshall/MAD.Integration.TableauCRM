@@ -56,11 +56,12 @@ namespace MAD.Integration.TableauCRM.Jobs
             // Generate a temp CSV file using the result set retrieved from the input table
             var csvFilePath = this.csvManager.GenerateFile(configuration.DestinationTableName, resultSet);
 
-            var chunkIndex = 1;
-
             // Break down the CSV file into 10MB chunks
             // This is the maximum limit Salesforce will accept when uploading data
-            foreach (var chunk in this.csvManager.ReadFileChunks(csvFilePath))
+            var fileChunks = this.csvManager.ReadFileChunks(csvFilePath);
+            var chunkIndex = 1;
+
+            foreach (var chunk in fileChunks)
             {
                 var dataObject = new SObject
                 {

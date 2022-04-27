@@ -23,10 +23,7 @@ namespace MAD.Integration.TableauCRM
         public string FieldsEnclosedBy { get; set; } = "\"";
 
         [JsonProperty("fieldsEscapedBy")]
-        public string FieldsEscapedBy { get; set; }
-
-        [JsonProperty("linesTerminatedBy")]
-        public string LinesTerminatedBy { get; set; } = "\r\n";
+        public string FieldsEscapedBy { get; set; } = "\"";
 
         [JsonProperty("numberOfLinesToIgnore")]
         public int NumberOfLinesToIgnore { get; set; }

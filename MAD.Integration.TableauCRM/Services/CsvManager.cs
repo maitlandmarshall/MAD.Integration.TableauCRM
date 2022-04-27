@@ -69,9 +69,11 @@ namespace MAD.Integration.TableauCRM.Services
             using var fs = File.OpenRead(csvFilePath);
             using (var bs = new BufferedStream(fs))
             {
-                while (bs.Read(buffer, 0, bufferSize) != 0)
+                int bytesRead = 0;
+
+                while ((bytesRead = bs.Read(buffer, 0, bufferSize)) != 0)
                 {
-                    yield return buffer;
+                    yield return buffer.Take(bytesRead).ToArray();
                 }
             }
         }
