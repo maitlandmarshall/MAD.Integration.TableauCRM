@@ -57,18 +57,16 @@ namespace MAD.Integration.TableauCRM.Tests
             var sqlConFactory = new SqlConnectionFactory(config);
             var queryFactory = new QueryFactoryFactory(sqlConFactory, new SqlServerCompiler());
             var csvManager = new CsvManager();
-            var queryClient = new QueryClient(queryFactory);
+            var resultSetFactory = new SqlResultSetFactory(queryFactory);            
 
-            // Query source SQL table from configuration
-            var queryResults = await queryClient.QuerySourceTable(configuration);
-            queryResults.Should().NotBeEmpty();
-
-            // Query column definitions from source table in configuration
-            var columnResults = await queryClient.GetSourceTableColumns(configuration);
-            columnResults.Should().NotBeEmpty();
+            // Query source SQL table rows & column definitions
+            var resultSet = await resultSetFactory.Create(configuration);
+            resultSet.Should().NotBeNull();
+            resultSet.Results.Should().NotBeEmpty();
+            resultSet.Schema.Should().NotBeEmpty();
 
             // Generate the CSV file in the temp folder location
-            var filePath = csvManager.GenerateFile(configuration.DestinationTableName, queryResults);
+            var filePath = csvManager.GenerateFile(configuration.DestinationTableName, resultSet);
             filePath.Should().NotBeNullOrEmpty();
 
             // Double check the file exists
