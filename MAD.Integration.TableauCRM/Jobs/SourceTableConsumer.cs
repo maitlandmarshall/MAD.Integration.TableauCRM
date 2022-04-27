@@ -114,15 +114,17 @@ namespace MAD.Integration.TableauCRM.Jobs
                     Fields = resultSetSchema.Select(x =>
                     {
                         var dataType = this.GetSalesforceDataType(x.System_Type_Name);
+                        var name = x.Name.Replace(" ", "");
+
                         var fieldInfo = new FieldInfo
                         {
                             CanTruncate = false,
                             Type = dataType,
                             Format = dataType == "Date" ? "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" : null,
-                            FullyQualifiedName = x.Name,
+                            FullyQualifiedName = name,
                             Precision = Math.Min(18, x.Precision),
                             Scale = x.Scale,
-                            Name = x.Name,
+                            Name = name,
                             Label = x.Name
                         };
 

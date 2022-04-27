@@ -26,7 +26,7 @@ namespace MAD.Integration.TableauCRM.Services
             // Write header columns to csv file
             foreach (var schema in resultSet.Schema)
             {
-                csvWriter.WriteField(schema.Name);
+                csvWriter.WriteField(schema.Name.Replace(" ", ""));
             }
 
             // Write rows to csv file
