@@ -168,6 +168,7 @@ namespace MAD.Integration.TableauCRM.Jobs
                 case "time":
                     result = "Text";
                     break;
+                case "numeric":
                 case "bigint":
                 case "decimal":
                 case "float":
